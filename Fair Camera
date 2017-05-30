@@ -1,0 +1,65 @@
+<meta charset="utf-8">
+<style type="text/css">
+	body{
+		text-align: center;
+	}
+	#capture,#save{		
+		width: 300px;
+		height: 50px;
+		border-radius: 25px;
+		border: none;
+		font-size: 2em;
+		background: linear-gradient(to right,blue,purple);
+		color: lavender;
+		cursor: pointer;
+		margin-top: 1%;
+	}
+</style>
+<body>
+	<video autoplay id="video" width="400" height="300"></video>
+	<canvas id="canvas" width="400" height="300"></canvas><br>
+	<button id="capture">Capture</button><br>
+	<button id="save">Save</button>
+	<script type="text/javascript">
+		var capture=document.getElementById("capture");
+		var save=document.getElementById("save");
+		var video=document.getElementById("video");
+		var canvas=document.getElementById("canvas");
+		var context=canvas.getContext("2d");
+		var haveimg=false;
+		navigator.getUserMedia=navigator.getUserMedia||navigator.webkitGetUserMedia||navigator.mozGetUserMedia||navigator.msGetUserMedia;
+		window.URL=window.URL||window.webkitURL;
+		navigator.getUserMedia({video:true},onSuccess,onError);
+		function onSuccess(stream){
+			video.src=window.URL.createObjectURL(stream);
+		}
+		function onError(){
+			console.log("获取视频出错");
+		}
+		capture.onclick=function(e){
+			e.preventDefault();
+			context.drawImage(video,0,0,400,300);
+			var img=context.getImageData(0,0,400,300);
+			var picLength=400*300;
+			for(var i=0;i<picLength*4;i+=4){
+				var myred=img.data[i];
+				var mygreen=img.data[i+1];
+				var myblue=img.data[i+2];
+				var myGray=parseInt((myred+myblue+mygreen)/3);
+				img.data[i]=img.data[i+1]=img.data[i+2]=myGray;
+			}
+			context.putImageData(img,0,0);
+			haveimg=true;
+		}
+		save.onclick=function(e){
+			e.preventDefault();
+			if(haveimg){
+				var image=canvas.toDataURL("image/png");
+				window.location.href=image;
+			}else{
+				alert("Please capture first!");
+			}
+		}
+	</script>
+</body>
+
